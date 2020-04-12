@@ -9,6 +9,7 @@ from itertools import combinations
 import typing
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 
 class Graph:
@@ -124,7 +125,7 @@ class Graph:
                     temp = []
                     self.connectedComps.append(self.dfsrecrusive(node, temp, visited))
         except RecursionError:
-            print("Switched to iterative")
+            logger.info("Switched to iterative")
             visited = []
             for node in self.graph:
                 if node not in visited:
@@ -163,10 +164,10 @@ if __name__ == '__main__':
     dfsAlgo = """
 from editor.graph import Graph
 g = Graph()
-for i in range(10000):
+for i in range(1000):
     g.addEdge((i, i), (i + 1, i + 1))
 g.findConnectedComps()
-print(len(g.connectedComps))
+print("No. of connected components: {0}".format(len(g.connectedComps)))
 """
     time = timeit.timeit(dfsAlgo, number=1)
-    print(time)
+    print("Executed in {0}".format(time))
