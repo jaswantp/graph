@@ -155,7 +155,7 @@ if __name__ == '__main__':
     import timeit
 
     dfsAlgo = """
-from editor.graph import Graph
+from graph import Graph
 g = Graph()
 for i in range(1_000_000):
     g.addEdge((i, i), (i + 1, i + 1))
