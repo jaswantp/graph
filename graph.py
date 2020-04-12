@@ -43,23 +43,18 @@ class Graph:
         self.graph[node1].discard(node2)
         self.graph[node2].discard(node1)
 
-    def deleteNode(self, node: typing.Any):
-        self.graph[node].clear()  # Clear the node's adjacency list.
-        for _node in self.graph:
-            self.graph[_node].discard(node)  # discard node from other node's adjacency list.
-
     def dissolveNode(self, node: typing.Any):
         self.graph[node].clear()  # Clear the node's adjacency list.
         for _node in self.graph:
             if node in self.graph[_node]:
                 self.newnodes.add(_node)  # keep track of connected nodes. Implementation might want to undo dissolve.
             self.graph[_node].discard(node)  # discard node from other node's adjacency list.
-        nodepairs = list(combinations(self.newnodes, 2))
+        nodepairs = list(combinations(self.newnodes, 2))  # connect nodepairs with edges.
         for nodepair in nodepairs:
             self.addEdge(nodepair[0], nodepair[1])
 
     def splitEdge(self, node1: typing.Any, node2: typing.Any):
-        # split into two.
+        # split into two edges.
         newnode = ((node1[0] + node2[0]) * 0.5,
                    (node1[1] + node2[1]) * 0.5)
         # delete edge (node1, node2)
@@ -71,44 +66,43 @@ class Graph:
     def directlyConnected(self, node1: typing.Any, node2: typing.Any):
         return node1 in self.graph[node2] or node2 in self.graph[node1]
 
-    def dfsiterative(self, thisnode: typing.Any, traversal: list, visited: list):
+    def dfsiterative(self, thisnode: typing.Any, visited: list):
         """
         Depth first search algorithm. [https://en.wikipedia.org/wiki/Depth-first_search#cite_note-6] O(E)
         Args:
             thisnode: the current node in the dfs algorithm.
-            traversal: a list of nodes that belong to a single component.
             visited: a list of nodes that have been visited.
-        Returns:(list) temp
+        Returns:(list) component
         """
         # Use a custom stack.
         stack = [thisnode]
+        component = []
 
         while stack:
             node = stack.pop()
             if node not in visited:
                 visited.append(node)
-                traversal.append(node)
-                for adjnode in self.graph[node]:
-                    stack.append(adjnode)
-        return traversal
+                component.append(node)
+                stack.extend(self.graph[node])
+        return component
 
-    def dfsrecrusive(self, thisnode: typing.Any, traversal: list, visited: list):
+    def dfsrecrusive(self, thisnode: typing.Any, component: list, visited: list):
         """
         Depth first search algorithm. [https://en.wikipedia.org/wiki/Depth-first_search#cite_note-5]
         Args:
             thisnode: the current node in the dfs algorithm.
-            traversal: a list of nodes that belong to a single component.
+            component: a list of nodes that belong to a single component.
             visited: a list of nodes that have been visited.
         Returns:(list) temp
         """
         visited.append(thisnode)
-        traversal.append(thisnode)
+        component.append(thisnode)
 
         for adjnode in self.graph[thisnode]:
             if adjnode not in visited:
-                traversal = self.dfsrecrusive(adjnode, traversal, visited)
+                component = self.dfsrecrusive(adjnode, component, visited)
 
-        return traversal
+        return component
 
     def findConnectedComps(self):
         """
@@ -122,15 +116,14 @@ class Graph:
             visited = []
             for node in self.graph:
                 if node not in visited:
-                    temp = []
-                    self.connectedComps.append(self.dfsrecrusive(node, temp, visited))
+                    component = []
+                    self.connectedComps.append(self.dfsrecrusive(node, component, visited))
         except RecursionError:
             logger.info("Switched to iterative")
             visited = []
             for node in self.graph:
                 if node not in visited:
-                    temp = []
-                    self.connectedComps.append(self.dfsiterative(node, temp, visited))
+                    self.connectedComps.append(self.dfsiterative(node, visited))
 
     def areConnected(self, node1: typing.Any, node2: typing.Any):
         """
@@ -164,7 +157,7 @@ if __name__ == '__main__':
     dfsAlgo = """
 from editor.graph import Graph
 g = Graph()
-for i in range(1000):
+for i in range(1_000_000):
     g.addEdge((i, i), (i + 1, i + 1))
 g.findConnectedComps()
 print("No. of connected components: {0}".format(len(g.connectedComps)))
