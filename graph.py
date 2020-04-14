@@ -221,8 +221,7 @@ from editor.graph import Graph
 g = Graph()
 for i in range(1_000_000):
     g.addEdge((i, i), (i + 1, i + 1))
-g.find__connectedComps()
-print("No. of connected components: {0}".format(len(g.__connectedComps)))
+print("No. of connected components: {0}".format(len(g.connectedComps)))
 """
     time = timeit.timeit(dfsAlgo, number=1)
     logger.info("Executed in {0}".format(time))
