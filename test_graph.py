@@ -1,12 +1,15 @@
 import unittest
 
-from graph import Graph
+from editor.graph import Graph
+
+NNODES = 1 << 10
 
 
 class TestGraph(unittest.TestCase):
     def setUp(self):
         self.graph = Graph()
-        for i in range(10000):
+        print("Input size = {0}".format(NNODES))
+        for i in range(NNODES):
             self.graph.addEdge((i, i), (i + 1, i + 1))
 
     def test_delete_edge(self):
@@ -89,23 +92,37 @@ class TestGraph(unittest.TestCase):
         self.assertTrue(self.graph.directlyConnected(node, node3))
 
     def test_directly_connected(self):
-        for i in range(10000):
+        for i in range(NNODES):
             self.assertTrue(self.graph.directlyConnected((i, i), (i + 1, i + 1)))
-        for i in range(0, 10000, 2):
+        for i in range(0, NNODES, 2):
             self.assertFalse(self.graph.directlyConnected((i, i), (i + 2, i + 2)))
 
     def test_find_connected_comps(self):
-        self.graph.findConnectedComps()
         self.assertEqual(len(self.graph.connectedComps), 1)
 
     def test_are_connected(self):
-        self.graph.findConnectedComps()
-        for i in range(10000):
-            self.assertTrue(self.graph.areConnected((i, i), (i + 1, i + 1)))
-        for i in range(0, 10000, 2):
-            self.assertTrue(self.graph.areConnected((i, i), (i + 2, i + 2)))
-        for i in range(0, 10000, 10):
-            self.assertTrue(self.graph.areConnected((i, i), (i + 10, i + 10)))
+        for i in range(NNODES + 1):
+            n1 = (i, i)
+            n2 = ((i + 1) % (NNODES + 1), (i + 1) % (NNODES + 1))  # wrap around.
+            self.assertTrue(self.graph.areConnected(n1, n2))
+        for i in range(0, NNODES + 1, 2):
+            n1 = (i, i)
+            n2 = ((i + 2) % (NNODES + 1), (i + 2) % (NNODES + 1))  # wrap around.
+            self.assertTrue(self.graph.areConnected(n1, n2))
+        for i in range(0, NNODES + 1, 10):
+            n1 = (i, i)
+            n2 = ((i + 10) % (NNODES + 1), (i + 10) % (NNODES + 1))  # wrap around.
+            self.assertTrue(self.graph.areConnected(n1, n2))
+
+    def test_move_node(self):
+        for i in range(NNODES + 1):
+            self.graph.moveNode((i, i), (0.1, 0.1))
+
+        # It is sufficient to check these.
+        self.assertTrue(len(self.graph.vertIndices) == NNODES + 1)
+        self.assertTrue(len(self.graph.edgeIndices) == NNODES * 2)
+        self.assertTrue(len(self.graph.connectedComps) == 1)
+        self.assertTrue(len(self.graph.graph) == NNODES + 1)
 
 
 if __name__ == '__main__':
